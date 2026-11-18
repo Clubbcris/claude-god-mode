@@ -74,7 +74,9 @@ export FLAVOUR="${OS_NAME}"
 CASPER
 
 say "Branding"
-cat > /etc/os-release <<OSR
+# /etc/os-release is a symlink into /usr/lib on Ubuntu, so write the real
+# file and keep the symlink rather than copying one onto the other.
+cat > /usr/lib/os-release <<OSR
 PRETTY_NAME="${OS_NAME} ${OS_VERSION}"
 NAME="${OS_NAME}"
 VERSION_ID="${OS_VERSION}"
@@ -84,7 +86,7 @@ ID_LIKE="ubuntu debian"
 HOME_URL="https://github.com/clubbcris/claude-god-mode"
 UBUNTU_CODENAME=${UBUNTU_SUITE}
 OSR
-cp -f /etc/os-release /usr/lib/os-release
+ln -sf ../usr/lib/os-release /etc/os-release
 echo "${OS_NAME} ${OS_VERSION} \\n \\l" > /etc/issue
 
 say "Enabling services"

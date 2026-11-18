@@ -74,16 +74,34 @@ chk "machine-id blank"            "[ ! -s '$SQ/etc/machine-id' ]"
 
 echo
 echo "-- enabled services --"
-for s in zramswap earlyoom tlp lightdm NetworkManager; do
-  if ls "$SQ"/etc/systemd/system/*.target.wants/ 2>/dev/null | grep -q "^$s" \
-     || find "$SQ/etc/systemd/system" -name "$s.service" 2>/dev/null | grep -q .; then
+# A service is enabled when systemd has made a .wants symlink for it.
+# lightdm is special: enabling it creates /etc/systemd/system/display-manager.service.
+for s in zramswap earlyoom tlp irqbalance NetworkManager fstrim.timer; do
+  if find "$SQ/etc/systemd/system" -path '*.wants/*' -name "$s*" 2>/dev/null | grep -q .; then
     ok "enabled: $s"
   else bad "enabled: $s"; fi
 done
-if [ -L "$SQ/etc/systemd/system/NetworkManager-wait-online.service" ] \
-   && [ "$(readlink "$SQ/etc/systemd/system/NetworkManager-wait-online.service")" = "/dev/null" ]; then
+chk "enabled: lightdm (display-manager)" \
+    "[ -L '$SQ/etc/systemd/system/display-manager.service' ]"
+if [ "$(readlink "$SQ/etc/systemd/system/NetworkManager-wait-online.service" 2>/dev/null)" = "/dev/null" ]; then
   ok "masked: NetworkManager-wait-online"
 else bad "masked: NetworkManager-wait-online"; fi
+for s in apport whoopsie; do
+  if [ "$(readlink "$SQ/etc/systemd/system/$s.service" 2>/dev/null)" = "/dev/null" ]; then
+    ok "masked: $s"
+  else bad "masked: $s"; fi
+done
+
+echo
+echo "-- secure boot --"
+if [ -f "$MNT/EFI/BOOT/grubx64.efi" ] && [ -f "$MNT/EFI/ubuntu/grub.cfg" ]; then
+  ok "signed shim + GRUB chain present"
+  if strings "$MNT/EFI/BOOT/BOOTX64.EFI" 2>/dev/null | grep -qi "Microsoft Corporation UEFI"; then
+    ok "BOOTX64.EFI carries Microsoft's UEFI CA (Secure Boot should work)"
+  else bad "BOOTX64.EFI does not look Microsoft-signed"; fi
+else
+  echo "  \033[33mNOTE\033[0m unsigned GRUB -- Secure Boot must be disabled to boot"
+fi
 
 echo
 echo "-- versions --"

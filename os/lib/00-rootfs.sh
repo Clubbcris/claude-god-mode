@@ -35,6 +35,9 @@ mount_chroot() {
   mount -t devpts devpts "${ROOT}/dev/pts"
   mount -t tmpfs tmpfs "${ROOT}/dev/shm"
   mount -t tmpfs tmpfs "${ROOT}/run"
+  # systemd-resolved's postinst turns this into a symlink into /run, which
+  # dangles against the tmpfs we just mounted, so replace it outright.
+  rm -f "${ROOT}/etc/resolv.conf"
   cp -f /etc/resolv.conf "${ROOT}/etc/resolv.conf"
 }
 

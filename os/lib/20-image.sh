@@ -133,12 +133,25 @@ build_bios_image() {
   cat /usr/lib/grub/i386-pc/cdboot.img "${WORK}/core.img" > "${ISODIR}/boot/grub/bios.img"
 }
 
+# Resolve a path inside the rootfs (following symlinks relative to it) and
+# echo the host-visible path, or nothing if it does not exist.
+resolve_in_root() {
+  local target
+  target="$(chroot "$ROOT" readlink -f "$1" 2>/dev/null || true)"
+  [[ -n "$target" && -f "${ROOT}${target}" ]] && { echo "${ROOT}${target}"; return 0; }
+  [[ -f "${ROOT}$1" ]] && { echo "${ROOT}$1"; return 0; }
+  return 0
+}
+
 build_efi_image() {
   local img="${ISODIR}/EFI/efiboot.img"
   local shim grubsigned secureboot=0
-  shim="$(ls -1 "${ROOT}"/usr/lib/shim/shimx64.efi.signed 2>/dev/null | head -1)"
-  [[ -n "$shim" ]] || shim="$(ls -1 "${ROOT}"/usr/lib/shim/shimx64.efi.signed.latest 2>/dev/null | head -1)"
-  grubsigned="$(ls -1 "${ROOT}"/usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed 2>/dev/null | head -1)"
+  # shimx64.efi.signed is an alternatives symlink to an absolute path that
+  # only resolves *inside* the rootfs, so resolve it there rather than
+  # letting a host-side cp follow it to nowhere.
+  shim="$(resolve_in_root /usr/lib/shim/shimx64.efi.signed)"
+  [[ -n "$shim" ]] || shim="$(resolve_in_root /usr/lib/shim/shimx64.efi.signed.latest)"
+  grubsigned="$(resolve_in_root /usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed)"
 
   if [[ -n "$shim" && -n "$grubsigned" ]]; then
     log "Building UEFI boot image (Secure Boot capable: shim + signed GRUB)"
