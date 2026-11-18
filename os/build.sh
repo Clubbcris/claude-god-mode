@@ -3,7 +3,9 @@
 # Produces a hybrid (UEFI + legacy BIOS) Ubuntu-based live ISO with
 # Claude Code, Node 22 and Google Chrome preinstalled.
 #
-# Usage:  sudo ./build.sh [--work DIR] [--out DIR] [--skip-rootfs]
+# Usage:  sudo ./build.sh [--work DIR] [--out DIR] [--skip-rootfs] [--skip-chroot]
+#
+# REUSE_SQUASHFS=1 reuses an existing squashfs instead of recompressing.
 set -euo pipefail
 
 export OS_NAME="GodMode OS"
@@ -20,12 +22,14 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORK="${HERE}/work"
 OUT="${HERE}/out"
 SKIP_ROOTFS=0
+SKIP_CHROOT=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --work) WORK="$2"; shift 2 ;;
     --out) OUT="$2"; shift 2 ;;
     --skip-rootfs) SKIP_ROOTFS=1; shift ;;
+    --skip-chroot) SKIP_CHROOT=1; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -59,7 +63,11 @@ if [[ $SKIP_ROOTFS -eq 0 ]]; then
 else
   log "Skipping debootstrap (--skip-rootfs)"
 fi
-stage_chroot
+if [[ $SKIP_CHROOT -eq 0 ]]; then
+  stage_chroot
+else
+  log "Skipping chroot setup (--skip-chroot)"
+fi
 stage_image
 
 log "Done: ${OUT}/${OS_ID}-os-${OS_VERSION}-${ARCH}.iso"

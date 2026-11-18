@@ -115,19 +115,27 @@ GRUB
   # Embedded in the standalone grub binaries: find the medium, then hand
   # over to the menu above.
   cat > "${WORK}/grub-early.cfg" <<EARLY
-search --set=root --file /.disk/${OS_ID}.id
+search --no-floppy --set=root --file /.disk/${OS_ID}.id
+if [ -z "\$root" ]; then set root=(cd0); fi
 set prefix=(\$root)/boot/grub
-configfile /boot/grub/grub.cfg
+configfile (\$root)/boot/grub/grub.cfg
 EARLY
 }
 
 build_bios_image() {
   log "Building legacy BIOS boot image"
+  # "search" is only a dispatcher; without search_fs_file compiled in, the
+  # early config cannot find the medium and GRUB drops to a bare prompt
+  # instead of showing the menu. The UEFI path does not hit this because it
+  # uses Ubuntu's signed GRUB, which already carries a full module set.
+  local mods="normal linux linux16 iso9660 biosdisk part_gpt part_msdos \
+search search_fs_file search_fs_uuid search_label configfile echo test \
+all_video gfxterm videoinfo minicmd loadenv halt reboot ls cat"
   grub-mkstandalone \
     --format=i386-pc \
     --output="${WORK}/core.img" \
-    --install-modules="linux normal iso9660 biosdisk memdisk search tar ls all_video gfxterm part_gpt part_msdos" \
-    --modules="linux normal iso9660 biosdisk search" \
+    --install-modules="$mods tar memdisk" \
+    --modules="$mods" \
     --locales="" --fonts="" \
     "boot/grub/grub.cfg=${WORK}/grub-early.cfg"
   cat /usr/lib/grub/i386-pc/cdboot.img "${WORK}/core.img" > "${ISODIR}/boot/grub/bios.img"

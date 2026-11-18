@@ -26,7 +26,7 @@ Run against the shipping image, built from this tree by `os/build.sh`:
 
 ```
 godmode-os-0.1-amd64.iso   2.1 GB
-sha256  4afe63ceef60d3f4626bfb8e8b29a885b5bccf2164eb8d977e545c3cff48d088
+sha256  332c716ef01e6d16648612d5071560177a7096f22a1a31a8f583f1fd4f395d06
 ```
 
 
@@ -85,6 +85,26 @@ qemu-system-x86_64 -machine q35,smm=on \
 **These timings are software emulation on a host without `/dev/kvm`, and say
 nothing about speed on real hardware** — a real HP 15 boots this in a small
 fraction of that.
+
+### Legacy BIOS
+
+Tested separately, because the two firmware paths share nothing: UEFI boots
+Ubuntu's signed GRUB, legacy BIOS boots a GRUB image this build assembles
+itself.
+
+| t | State |
+|---|---|
+| 20s | SeaBIOS handing off |
+| 40s | menu taken, kernel booting — Ubuntu 24.04 splash |
+
+![legacy bios](images/boot-bios-040s.png)
+
+The first attempt at this failed: GRUB started but dropped to a bare `grub>`
+prompt, because `search` is only a dispatcher and the image lacked
+`search_fs_file`, so the early config could not locate the boot medium. UEFI
+hid the problem entirely, since Canonical's signed GRUB already carries a full
+module set. Fixed by compiling the search backends into the BIOS image and
+falling back to `(cd0)` if the search still finds nothing.
 
 ### The shipped binaries actually run
 
