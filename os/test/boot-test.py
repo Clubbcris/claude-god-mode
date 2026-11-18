@@ -7,7 +7,7 @@ prove the bootloader and the live session come up).
   ./boot-test.py ISO --mode uefi --shots 25,70,240,420,600 --out DIR
 """
 import argparse, json, os, shutil, signal, socket, struct, subprocess
-import sys, time, zlib
+import sys, tempfile, time, zlib
 
 # "uefi" boots plain UEFI. "uefi-secureboot" uses the Secure Boot enforcing
 # firmware with Microsoft's keys already enrolled, which is how a retail
@@ -102,11 +102,13 @@ def main():
 
     out = os.path.abspath(args.out)
     os.makedirs(out, exist_ok=True)
-    mon = os.path.join(out, f"qmp-{args.mode}.sock")
+    # AF_UNIX paths are limited to ~107 bytes, which a deep --out directory
+    # blows through, so keep the control socket in a short temp dir.
+    sockdir = tempfile.mkdtemp(prefix="qmp-", dir="/tmp")
+    mon = os.path.join(sockdir, "m.sock")
     serial = os.path.join(out, f"serial-{args.mode}.log")
-    for p in (mon, serial):
-        if os.path.exists(p):
-            os.remove(p)
+    if os.path.exists(serial):
+        os.remove(serial)
 
     machine = "q35,smm=on" if args.mode == "uefi-secureboot" else "q35"
     cmd = [
@@ -188,8 +190,7 @@ def main():
                 proc.wait(timeout=20)
             except subprocess.TimeoutExpired:
                 proc.kill()
-        if os.path.exists(mon):
-            os.remove(mon)
+        shutil.rmtree(sockdir, ignore_errors=True)
 
     if os.path.exists(serial) and os.path.getsize(serial):
         print(f"[boot-test] serial log: {serial} ({os.path.getsize(serial)} bytes)")
