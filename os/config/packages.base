@@ -1,0 +1,120 @@
+# Package set for GodMode OS. '#' comments and blank lines are ignored.
+
+# --- kernel, firmware, live boot ---------------------------------------
+linux-image-generic
+linux-firmware
+initramfs-tools
+casper
+discover
+laptop-detect
+os-prober
+
+# --- bootloaders (for the installed system) ---------------------------
+grub-efi-amd64-signed
+grub-pc-bin
+grub2-common
+shim-signed
+efibootmgr
+
+# --- base system -------------------------------------------------------
+systemd-sysv
+dbus
+sudo
+locales
+tzdata
+keyboard-configuration
+console-setup
+ca-certificates
+gnupg
+apt-utils
+less
+nano
+xz-utils
+bzip2
+unzip
+zip
+curl
+wget
+rsync
+openssh-client
+
+# --- filesystems -------------------------------------------------------
+e2fsprogs
+dosfstools
+exfatprogs
+ntfs-3g
+btrfs-progs
+gdisk
+parted
+udisks2
+
+# --- networking --------------------------------------------------------
+network-manager
+network-manager-gnome
+wireless-tools
+wpasupplicant
+iw
+rfkill
+
+# --- X / desktop (XFCE: light enough for 4 GB laptops) ----------------
+xorg
+xserver-xorg-input-all
+xserver-xorg-video-all
+xfce4
+xfce4-terminal
+xfce4-power-manager
+xfce4-screenshooter
+xfce4-notifyd
+xfce4-taskmanager
+thunar
+thunar-archive-plugin
+xarchiver
+mousepad
+ristretto
+lightdm
+lightdm-gtk-greeter
+dbus-x11
+gvfs
+gvfs-backends
+policykit-1-gnome
+papirus-icon-theme
+fonts-dejavu-core
+fonts-noto-color-emoji
+fonts-liberation
+
+# --- audio -------------------------------------------------------------
+pipewire
+pipewire-pulse
+pipewire-audio
+wireplumber
+pavucontrol
+alsa-utils
+
+# --- performance / power ----------------------------------------------
+zram-tools
+earlyoom
+irqbalance
+thermald
+tlp
+tlp-rdw
+powertop
+util-linux
+
+# --- developer toolchain (this is a machine for driving agents) -------
+build-essential
+git
+python3
+python3-pip
+python3-venv
+htop
+ripgrep
+fd-find
+jq
+tree
+tmux
+bash-completion
+man-db
+
+# --- installer ---------------------------------------------------------
+calamares
+calamares-settings-ubuntu-common

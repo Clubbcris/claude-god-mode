@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Show what the tuning layer is actually doing right now.
+set -uo pipefail
+b() { printf '\033[1m%s\033[0m\n' "$*"; }
+
+b "memory"
+free -h | sed 's/^/  /'
+echo
+b "zram swap"
+if command -v zramctl >/dev/null && zramctl --noheadings 2>/dev/null | grep -q .; then
+  zramctl | sed 's/^/  /'
+else
+  echo "  not active -- 'sudo systemctl start zramswap' (expected in a live session)"
+fi
+echo
+b "swap devices"
+swapon --show 2>/dev/null | sed 's/^/  /' || echo "  none"
+echo
+b "key sysctls"
+for k in vm.swappiness vm.page-cluster vm.vfs_cache_pressure fs.inotify.max_user_watches; do
+  printf '  %-34s %s\n' "$k" "$(sysctl -n $k 2>/dev/null)"
+done
+echo
+b "I/O schedulers"
+for d in /sys/block/*/queue/scheduler; do
+  dev=$(echo "$d" | cut -d/ -f4)
+  case "$dev" in loop*|ram*|sr*) continue ;; esac
+  rot=$(cat "/sys/block/$dev/queue/rotational" 2>/dev/null)
+  printf '  %-10s rotational=%s  %s\n' "$dev" "${rot:-?}" "$(cat "$d")"
+done
+echo
+b "memory protection"
+systemctl is-active earlyoom >/dev/null 2>&1 \
+  && echo "  earlyoom: active" || echo "  earlyoom: inactive"
+echo
+b "slowest units this boot"
+systemd-analyze blame 2>/dev/null | head -8 | sed 's/^/  /'
+echo
+systemd-analyze 2>/dev/null | sed 's/^/  /'

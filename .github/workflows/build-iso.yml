@@ -1,0 +1,49 @@
+name: Build GodMode OS ISO
+
+# Manual by default: a full ISO build takes ~25 minutes of runner time.
+on:
+  workflow_dispatch:
+    inputs:
+      squash_level:
+        description: "zstd compression level (1-22). Higher = smaller ISO, slower build."
+        required: false
+        default: "15"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free up runner disk
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
+                      /usr/local/share/boost /usr/local/.ghcup
+          df -h /
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            debootstrap squashfs-tools xorriso mtools dosfstools \
+            grub-pc-bin grub-efi-amd64-bin grub2-common
+
+      - name: Build ISO
+        env:
+          SQUASH_LEVEL: ${{ inputs.squash_level }}
+        run: sudo -E ./os/build.sh
+
+      - name: Report result
+        run: |
+          ls -lh os/out/
+          cat os/out/*.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: godmode-os-iso
+          path: |
+            os/out/*.iso
+            os/out/*.sha256
+          retention-days: 14
+          compression-level: 0

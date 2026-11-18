@@ -1,0 +1,7 @@
+# Kill the worst memory hog *before* the kernel OOM killer freezes the
+# desktop for minutes. Chrome renderers are preferred victims; never the
+# session itself.
+#
+# No quotes around the regexes: systemd splits this on whitespace without
+# shell quote removal, so quotes here would end up inside the pattern.
+EARLYOOM_ARGS=-r 3600 -m 5 -s 5 --avoid ^(systemd|Xorg|lightdm|xfwm4|xfce4-session|dbus-daemon|sshd|NetworkManager)$ --prefer ^(chrome|chromium|firefox)$

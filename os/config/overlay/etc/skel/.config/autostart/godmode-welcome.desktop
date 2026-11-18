@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Welcome to GodMode OS
+Comment=Orientation and first steps
+Exec=xfce4-terminal --title="Welcome" --command="bash -lc 'godmode-welcome; read -rp \"Press Enter to close...\"'"
+Icon=help-about
+Terminal=false
+Categories=System;

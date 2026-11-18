@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Claude Code
+GenericName=AI coding agent
+Comment=Start Claude Code in a terminal
+Exec=xfce4-terminal --title="Claude Code" --command="bash -lc 'claude; exec bash'"
+Icon=utilities-terminal
+Terminal=false
+Categories=Development;Utility;
+Keywords=ai;claude;agent;code;

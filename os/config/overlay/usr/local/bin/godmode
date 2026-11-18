@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Claude Code with every permission prompt bypassed.
+set -euo pipefail
+
+ACK="${XDG_CONFIG_HOME:-$HOME/.config}/godmode/accepted"
+
+if [[ ! -f "$ACK" && "${GODMODE_YES:-0}" != "1" ]]; then
+  cat <<'WARN'
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  GOD MODE                                                    │
+  └──────────────────────────────────────────────────────────────┘
+
+  This runs Claude Code with --dangerously-skip-permissions.
+
+  It will NOT ask before it edits files, deletes things, installs
+  packages, or runs shell commands. It has passwordless sudo on this
+  machine. There is no undo and no confirmation step.
+
+  That is the point of this mode, and it is genuinely useful. It is
+  also how people lose work. Two habits make it safe:
+
+    * run it inside a git repo with your work committed
+    * run it on this machine, not on anything you cannot rebuild
+
+  Plain "claude" gives you the normal, prompting version.
+
+WARN
+  read -rp "  Type 'yes' to enable god mode permanently: " reply
+  [[ "$reply" == "yes" ]] || { echo "  Cancelled. Use 'claude' for normal mode."; exit 1; }
+  mkdir -p "$(dirname "$ACK")"
+  date -Is > "$ACK"
+  echo
+fi
+
+exec claude --dangerously-skip-permissions "$@"

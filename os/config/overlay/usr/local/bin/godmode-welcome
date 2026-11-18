@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# First-login orientation, shown once per user.
+set -uo pipefail
+STAMP="${XDG_CONFIG_HOME:-$HOME/.config}/godmode/welcomed"
+if [[ -f "$STAMP" && "${1:-}" != "--force" ]]; then exit 0; fi
+mkdir -p "$(dirname "$STAMP")"; date -Is > "$STAMP"
+
+cat <<'TXT'
+
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║                     G O D   M O D E   O S                     ║
+  ╚═══════════════════════════════════════════════════════════════╝
+
+   Ubuntu 24.04 LTS  ·  XFCE  ·  Claude Code  ·  Chrome  ·  Node 22
+
+   First things first
+   ──────────────────
+     claude            start Claude Code (asks before it acts)
+     godmode           start Claude Code with NO permission prompts
+     godmode-tune      show what the performance tuning is doing
+     google-chrome     browser
+
+   You are logged in as 'godmode' with passwordless sudo.
+
+   Claude Code needs to sign in once. Run 'claude' and follow the
+   browser prompt; it opens Chrome for you.
+
+   Running from a USB stick? Nothing is saved across reboots unless
+   you set up persistence, and your existing hard drive has not been
+   touched. Use "Install GodMode OS" on the desktop to install.
+
+TXT
+exit 0

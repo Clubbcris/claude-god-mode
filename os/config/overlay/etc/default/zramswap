@@ -1,0 +1,5 @@
+# zram-tools: compressed swap in RAM. zstd gives ~3-4x compression at
+# negligible CPU cost on anything modern.
+ALGO=zstd
+PERCENT=60
+PRIORITY=100
