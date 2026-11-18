@@ -20,7 +20,37 @@ intervals; it needs no KVM and no display.
 
 ## Results
 
-_Populated by the run recorded below._
+### Offline image checks — 65/65 passed
+
+Run against `godmode-os-0.1-amd64.iso` (2.1 GB) built from commit `7b8cf9d`:
+
+```
+sudo ./os/test/verify-image.sh os/out/godmode-os-0.1-amd64.iso \
+                              os/work/filesystem.squashfs
+  ...
+  passed: 65   failed: 0   notes: 0
+```
+
+What that covers:
+
+| Area | Checked |
+|---|---|
+| ISO structure | kernel, initrd, squashfs, manifests, boot menu, BIOS and UEFI boot images, medium id, md5sums |
+| Boot menu | live / persistence / safe-graphics / integrity-check entries, all using `boot=casper` |
+| Boot records | two El Torito entries (BIOS + UEFI); MBR boot code present, first byte `0xeb` |
+| Secure Boot | signed shim + GRUB chain present, `BOOTX64.EFI` carries Microsoft's UEFI CA, signed-GRUB stub chains into the ISO menu |
+| Payload | Claude Code 2.1.327 (launcher symlink + 372 MB native binary), Node v22.23.5, Google Chrome, XFCE, LightDM, Calamares |
+| Tuning | `vm.swappiness=180`, zram on zstd, unquoted earlyoom args, I/O scheduler rules, `mitigations=off` hint present but commented |
+| Access model | passwordless sudo rule, LightDM autologin as `godmode`, casper live user |
+| Enabled units | zramswap, earlyoom, tlp, irqbalance, NetworkManager, fstrim, lightdm via display-manager |
+| Masked units | NetworkManager-wait-online, apport, whoopsie |
+| Absent by design | snapd (and pinned to priority -10), build-host proxy config, build-host CA certificate, `policy-rc.d`, diverted `initctl` |
+
+Image facts: kernel 6.8.0-149-generic, 1164 packages, 2.0 GB squashfs.
+
+### QEMU boot test
+
+_Pending — results appended when the run finishes._
 
 ## Not verified
 

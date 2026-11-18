@@ -9,8 +9,15 @@ prove the bootloader and the live session come up).
 import argparse, json, os, shutil, signal, socket, struct, subprocess
 import sys, time, zlib
 
-OVMF_CODE = "/usr/share/OVMF/OVMF_CODE_4M.fd"
-OVMF_VARS = "/usr/share/OVMF/OVMF_VARS_4M.fd"
+# "uefi" boots plain UEFI. "uefi-secureboot" uses the Secure Boot enforcing
+# firmware with Microsoft's keys already enrolled, which is how a retail
+# laptop ships -- so it proves the image boots without touching BIOS.
+FIRMWARE = {
+    "uefi": ("/usr/share/OVMF/OVMF_CODE_4M.fd",
+             "/usr/share/OVMF/OVMF_VARS_4M.fd"),
+    "uefi-secureboot": ("/usr/share/OVMF/OVMF_CODE_4M.secboot.fd",
+                        "/usr/share/OVMF/OVMF_VARS_4M.ms.fd"),
+}
 
 
 class Qmp:
@@ -82,7 +89,8 @@ def ppm_to_png(src, dst):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("iso")
-    ap.add_argument("--mode", choices=["uefi", "bios"], default="uefi")
+    ap.add_argument("--mode", choices=["uefi", "uefi-secureboot", "bios"],
+                    default="uefi")
     ap.add_argument("--shots", default="25,70,240,420,600",
                     help="seconds after launch at which to screenshot")
     ap.add_argument("--out", default="boot-test-out")
@@ -98,9 +106,10 @@ def main():
         if os.path.exists(p):
             os.remove(p)
 
+    machine = "q35,smm=on" if args.mode == "uefi-secureboot" else "q35"
     cmd = [
         "qemu-system-x86_64",
-        "-machine", "q35",
+        "-machine", machine,
         "-m", args.mem, "-smp", args.smp,
         "-cdrom", args.iso, "-boot", "d",
         "-vga", "std",
@@ -110,13 +119,17 @@ def main():
         "-rtc", "base=utc",
         "-no-reboot",
     ]
-    if args.mode == "uefi":
-        vars_copy = os.path.join(out, "OVMF_VARS.fd")
-        shutil.copy(OVMF_VARS, vars_copy)
+    if args.mode in FIRMWARE:
+        code, varsrc = FIRMWARE[args.mode]
+        vars_copy = os.path.join(out, f"OVMF_VARS-{args.mode}.fd")
+        shutil.copy(varsrc, vars_copy)
         cmd += [
-            "-drive", f"if=pflash,format=raw,unit=0,readonly=on,file={OVMF_CODE}",
+            "-drive", f"if=pflash,format=raw,unit=0,readonly=on,file={code}",
             "-drive", f"if=pflash,format=raw,unit=1,file={vars_copy}",
         ]
+        if args.mode == "uefi-secureboot":
+            cmd += ["-global", "driver=cfi.pflash01,property=secure,value=on",
+                    "-global", "ICH9-LPC.disable_s3=1"]
 
     print(f"[boot-test] mode={args.mode}  (TCG: no /dev/kvm)" if not os.path.exists("/dev/kvm")
           else f"[boot-test] mode={args.mode} (kvm)")
