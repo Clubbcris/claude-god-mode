@@ -6,10 +6,10 @@ here has not been verified — see "Not verified" at the bottom.
 ## Reproducing
 
 ```bash
-sudo ./os/build.sh                              # build the ISO
-sudo ./os/test/verify-image.sh os/out/*.iso     # offline checks, no boot
-sudo ./os/test/boot-test.py os/out/*.iso --mode uefi --out /tmp/bt
-sudo ./os/test/boot-test.py os/out/*.iso --mode bios --out /tmp/bt
+sudo ./os/build.sh                            # build the ISO
+./os/test/verify-image.sh os/out/*.iso        # offline checks, no boot, no root
+./os/test/boot-test.py os/out/*.iso --mode uefi-secureboot --out /tmp/bt
+./os/test/boot-test.py os/out/*.iso --mode bios            --out /tmp/bt
 ```
 
 `verify-image.sh` loop-mounts the ISO and its squashfs and asserts on
@@ -22,11 +22,17 @@ intervals; it needs no KVM and no display.
 
 ### Offline image checks — 65/65 passed
 
-Run against `godmode-os-0.1-amd64.iso` (2.1 GB) built from commit `7b8cf9d`:
+Run against the shipping image, built from this tree by `os/build.sh`:
 
 ```
-sudo ./os/test/verify-image.sh os/out/godmode-os-0.1-amd64.iso \
-                              os/work/filesystem.squashfs
+godmode-os-0.1-amd64.iso   2.1 GB
+sha256  4afe63ceef60d3f4626bfb8e8b29a885b5bccf2164eb8d977e545c3cff48d088
+```
+
+
+```
+./os/test/verify-image.sh os/out/godmode-os-0.1-amd64.iso \
+                          os/work/filesystem.squashfs
   ...
   passed: 65   failed: 0   notes: 0
 ```
