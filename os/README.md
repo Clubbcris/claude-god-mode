@@ -68,10 +68,20 @@ Be certain about `/dev/sdX`. Writing to the wrong device destroys that disk.
 
 ## Booting it on an HP 15
 
-Two BIOS settings matter, and the first one will stop you dead if you skip it.
+**Boot it:** power off, insert the stick, tap <kbd>Esc</kbd> at power-on, choose
+**F9 — Boot Device Options**, and pick your USB stick.
 
-**1. Turn off Secure Boot.** This image's bootloader is not signed by Microsoft,
-so Secure Boot will silently refuse it and you'll see "no bootable device".
+At the GRUB menu, take the first entry. If the screen stays black or garbled,
+reboot and choose **safe graphics**.
+
+### Secure Boot
+
+You should not need to disable it. The image boots through Ubuntu's
+Microsoft-signed shim and Canonical-signed GRUB, and this was tested against
+firmware with Microsoft's keys enrolled and Secure Boot enforcing — see
+[VERIFICATION.md](docs/VERIFICATION.md).
+
+If your machine still refuses the stick ("no bootable device"), disable it:
 
 - Power off. Press the power button, then tap <kbd>Esc</kbd> repeatedly.
 - Choose **F10 — BIOS Setup**.
@@ -79,18 +89,16 @@ so Secure Boot will silently refuse it and you'll see "no bootable device".
   *Boot Options*. You may be asked to type a 4-digit code to confirm.)
 - <kbd>F10</kbd> to save and exit.
 
-**2. Turn off Windows Fast Startup**, if Windows is still installed. In Windows:
-*Control Panel → Power Options → Choose what the power buttons do → Change
-settings that are currently unavailable →* untick *Turn on fast startup*.
-Fast Startup leaves the disk in a hibernated state that Linux cannot safely read.
+You will also need Secure Boot off if your Wi-Fi turns out to need the
+out-of-tree Broadcom driver, since unsigned kernel modules are refused while it
+is on. See [SECURE-BOOT.md](docs/SECURE-BOOT.md).
 
-**Then boot it:** power off, insert the stick, tap <kbd>Esc</kbd> at power-on,
-choose **F9 — Boot Device Options**, and pick your USB stick.
+### Turn off Windows Fast Startup
 
-At the GRUB menu, take the first entry. If the screen stays black or garbled,
-reboot and choose **safe graphics**.
-
----
+If Windows is still installed: *Control Panel → Power Options → Choose what the
+power buttons do → Change settings that are currently unavailable →* untick
+*Turn on fast startup*. Fast Startup leaves the disk in a hibernated state that
+Linux cannot safely read.
 
 ## First steps once it boots
 
@@ -182,18 +190,29 @@ line in `/etc/default/grub.d/99-godmode.cfg` and run `sudo update-grub`.
 
 ## Honest status
 
-- **Verified:** the ISO builds reproducibly, boots on UEFI and legacy BIOS under
-  QEMU, reaches the XFCE desktop, and has working `claude`, `godmode`, Chrome and
-  Node binaries. See `docs/VERIFICATION.md`.
-- **Configured but not fully exercised:** the Calamares install-to-disk path. The
-  config is valid and the module sequence is standard, but a real install onto real
-  hardware is the one thing a VM test cannot fully stand in for. Treat your first
-  install as the test, and keep a backup.
-- **Secure Boot is not supported.** You must disable it. Supporting it means
-  shipping Microsoft-signed shim + GRUB; see `docs/SECURE-BOOT.md`.
-- **Hardware caveat:** Broadcom Wi-Fi chips (common in some HP 15 models) need a
-  driver that cannot be redistributed. If Wi-Fi is missing, plug in Ethernet or
-  tether a phone over USB, then `sudo apt install bcmwl-kernel-source`.
+**Verified** (details and screenshots in [VERIFICATION.md](docs/VERIFICATION.md)):
+
+- The ISO builds from these scripts, and 65/65 offline image checks pass.
+- It boots to the XFCE desktop under QEMU **with Secure Boot enforcing and
+  Microsoft's keys enrolled**, autologging in as `godmode`.
+- Claude Code 2.1.327, Node v22.23.5 and Google Chrome 158 were each executed
+  from the built image, not merely found on disk.
+- No build-host state (proxy config, private CA, `policy-rc.d`) survives into
+  the image, and snapd is absent and pinned out.
+
+**Configured but not fully exercised:**
+
+- **Install to disk (Calamares).** The configs parse inside the image and the
+  module sequence is conventional, but a real install onto real hardware is the
+  one thing a VM cannot stand in for. Treat your first install as the test, and
+  keep a backup.
+- **Wi-Fi on your specific machine.** Broadcom chips, common in some HP 15
+  models, need a driver that cannot be redistributed. If Wi-Fi is missing, use
+  Ethernet or USB-tether a phone, then `sudo apt install bcmwl-kernel-source`.
+- **Suspend/resume and battery life**, which are hardware-specific.
+- **The performance claims, measured on your laptop.** Every change below is
+  justified and well-established, but no before/after benchmark has been run on
+  an actual HP 15. `godmode-tune` will show you what is active.
 
 ## A note on redistribution
 

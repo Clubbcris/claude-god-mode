@@ -48,9 +48,46 @@ What that covers:
 
 Image facts: kernel 6.8.0-149-generic, 1164 packages, 2.0 GB squashfs.
 
-### QEMU boot test
+### QEMU boot test — booted to desktop with Secure Boot **enforcing**
 
-_Pending — results appended when the run finishes._
+The important question for a retail laptop is not "does it boot" but "does it
+boot without the owner having to disable Secure Boot". So the test runs the
+Secure Boot enforcing firmware with Microsoft's keys already enrolled — the
+same trust configuration an HP 15 ships with:
+
+```
+qemu-system-x86_64 -machine q35,smm=on \
+  -drive if=pflash,...,file=/usr/share/OVMF/OVMF_CODE_4M.secboot.fd \
+  -drive if=pflash,...,file=OVMF_VARS_4M.ms.fd \
+  -global driver=cfi.pflash01,property=secure,value=on
+```
+
+4 GB RAM, 4 vCPU, **TCG software emulation** (the build host has no `/dev/kvm`).
+
+| t | State |
+|---|---|
+| 30s | black — OVMF still initialising |
+| 90s | Ubuntu 24.04 boot splash — shim and signed GRUB accepted, kernel running |
+| 200s | **full XFCE desktop**, autologged in as `godmode`, welcome screen drawn |
+
+![boot splash](images/boot-090s-splash.png)
+![desktop](images/boot-200s-desktop.png)
+
+The run was stopped after 200s once the desktop was up. **These timings are
+software emulation and say nothing about speed on real hardware** — a real HP 15
+boots this in a small fraction of that.
+
+### The shipped binaries actually run
+
+Presence on disk is not proof of execution, so each was run from the built root:
+
+```
+node     v22.23.5
+claude   2.1.327 (Claude Code)
+chrome   Google Chrome 158.0.8127.36
+godmode  resolves to /opt/node/bin/claude
+calamares configs parse inside the image
+```
 
 ## Not verified
 

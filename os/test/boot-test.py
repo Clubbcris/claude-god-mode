@@ -94,6 +94,8 @@ def main():
     ap.add_argument("--shots", default="25,70,240,420,600",
                     help="seconds after launch at which to screenshot")
     ap.add_argument("--out", default="boot-test-out")
+    ap.add_argument("--press-at", default="",
+                    help="SECONDS:KEY[,SECONDS:KEY] QMP keys to send, e.g. 240:ret")
     ap.add_argument("--mem", default="4096")
     ap.add_argument("--smp", default="4")
     args = ap.parse_args()
@@ -138,14 +140,28 @@ def main():
     try:
         qmp = Qmp(mon)
         shots = sorted(int(s) for s in args.shots.split(","))
+        presses = []
+        if args.press_at:
+            for item in args.press_at.split(","):
+                when, key = item.split(":")
+                presses.append((int(when), key))
+        # Interleave key presses with screenshots on one timeline.
+        timeline = sorted([(w, "shot", None) for w in shots] +
+                          [(w, "key", k) for w, k in presses])
         t0 = time.time()
-        for when in shots:
+        for when, kind, key in timeline:
             delay = when - (time.time() - t0)
             if delay > 0:
                 time.sleep(delay)
             if proc.poll() is not None:
                 print(f"[boot-test] qemu exited early (rc={proc.returncode})")
                 break
+            if kind == "key":
+                r = qmp.cmd("send-key",
+                            keys=[{"type": "qcode", "data": key}])
+                print(f"[boot-test] t={when:>4}s  sent key {key}"
+                      f"{' (error)' if 'error' in r else ''}")
+                continue
             ppm = os.path.join(out, f"{args.mode}-{when:04d}s.ppm")
             png = os.path.join(out, f"{args.mode}-{when:04d}s.png")
             r = qmp.cmd("screendump", filename=ppm)
