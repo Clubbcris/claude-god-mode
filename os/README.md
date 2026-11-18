@@ -163,6 +163,9 @@ recovery key to ever read that data again.
 
 The installer removes the live-session bits (autologin as `godmode`, the
 passwordless sudo rule, the installer itself) and sets up your own account.
+The installed system shows a normal login screen; your account is in `sudo`,
+so `sudo` asks for your password as usual. `godmode` still works — it skips
+Claude Code's prompts, not the system's.
 
 ---
 
