@@ -69,12 +69,14 @@ qemu-system-x86_64 -machine q35,smm=on \
 ```
 
 4 GB RAM, 4 vCPU, **TCG software emulation** (the build host has no `/dev/kvm`).
+Both this and the legacy BIOS test below were run against the same shipping
+image, `sha256 332c716e…`, after every fix recorded here.
 
 | t | State |
 |---|---|
 | 30s | black — OVMF still initialising |
 | 90s | Ubuntu 24.04 boot splash — shim and signed GRUB accepted, kernel running |
-| 200s | full XFCE desktop, autologged in as `godmode`, welcome screen drawn |
+| 210s | full XFCE desktop, autologged in as `godmode`, welcome screen drawn |
 | 250s | <kbd>Enter</kbd> sent over QMP to dismiss the welcome window |
 | 310s | desktop with all four shortcuts: Chrome, Install GodMode OS, Claude Code, Claude Code (God Mode) |
 
