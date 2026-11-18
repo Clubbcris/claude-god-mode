@@ -68,14 +68,17 @@ qemu-system-x86_64 -machine q35,smm=on \
 |---|---|
 | 30s | black — OVMF still initialising |
 | 90s | Ubuntu 24.04 boot splash — shim and signed GRUB accepted, kernel running |
-| 200s | **full XFCE desktop**, autologged in as `godmode`, welcome screen drawn |
+| 200s | full XFCE desktop, autologged in as `godmode`, welcome screen drawn |
+| 250s | <kbd>Enter</kbd> sent over QMP to dismiss the welcome window |
+| 310s | desktop with all four shortcuts: Chrome, Install GodMode OS, Claude Code, Claude Code (God Mode) |
 
 ![boot splash](images/boot-090s-splash.png)
-![desktop](images/boot-200s-desktop.png)
+![welcome](images/boot-200s-desktop.png)
+![desktop](images/boot-310s-desktop-icons.png)
 
-The run was stopped after 200s once the desktop was up. **These timings are
-software emulation and say nothing about speed on real hardware** — a real HP 15
-boots this in a small fraction of that.
+**These timings are software emulation on a host without `/dev/kvm`, and say
+nothing about speed on real hardware** — a real HP 15 boots this in a small
+fraction of that.
 
 ### The shipped binaries actually run
 
