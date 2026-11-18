@@ -36,6 +36,10 @@ yourself from this repo.
 Go to the repo's **Actions** tab → *Build GodMode OS ISO* → **Run workflow**.
 About 25 minutes later, download `godmode-os-iso` from that run's artifacts.
 
+> GitHub only offers the **Run workflow** button for workflows that exist on
+> the repository's **default branch**. Until this lands on `main`, the button
+> will not appear. Merge it first, or use Option B.
+
 **Option B — build it yourself** on any Linux box with ~15 GB free:
 
 ```bash
