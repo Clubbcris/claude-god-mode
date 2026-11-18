@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Install GodMode OS
+GenericName=System installer
+Comment=Install GodMode OS to this computer's hard drive
+Exec=pkexec calamares
+Icon=drive-harddisk
+Terminal=false
+Categories=System;

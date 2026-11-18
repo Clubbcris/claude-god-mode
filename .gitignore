@@ -5,3 +5,8 @@ dist/
 .DS_Store
 Thumbs.db
 .claude/
+
+# The .claude/ rule above is for a developer's own Claude config. The image's
+# /etc/skel is build input that has to ship, so exempt it.
+!os/config/overlay/etc/skel/.claude/
+!os/config/overlay/etc/skel/.claude/**

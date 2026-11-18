@@ -1,0 +1,32 @@
+---
+componentName: godmode
+
+welcomeStyleCalamares: true
+welcomeExpandingLogo: false
+windowExpanding: normal
+windowSize: 820px,540px
+windowPlacement: center
+
+strings:
+  productName: "GodMode OS"
+  shortProductName: "GodMode"
+  version: "0.1"
+  shortVersion: "0.1"
+  versionedName: "GodMode OS 0.1"
+  shortVersionedName: "GodMode 0.1"
+  bootloaderEntryName: "GodMode OS"
+  productUrl: "https://github.com/clubbcris/claude-god-mode"
+  productSupportUrl: "https://github.com/clubbcris/claude-god-mode/issues"
+
+images:
+  productLogo: "logo.png"
+  productIcon: "logo.png"
+
+slideshow: "show.qml"
+slideshowAPI: 2
+
+style:
+  SidebarBackground: "#16161f"
+  SidebarText: "#f2f2f7"
+  SidebarTextCurrent: "#ffffff"
+  SidebarBackgroundCurrent: "#7c5cff"

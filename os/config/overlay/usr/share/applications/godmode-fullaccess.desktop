@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Claude Code (God Mode)
+GenericName=AI coding agent, no prompts
+Comment=Claude Code with all permission prompts bypassed
+Exec=xfce4-terminal --title="Claude Code - GOD MODE" --command="bash -lc 'godmode; exec bash'"
+Icon=dialog-warning
+Terminal=false
+Categories=Development;Utility;
+Keywords=ai;claude;agent;godmode;
