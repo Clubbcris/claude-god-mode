@@ -60,7 +60,28 @@ On Windows, use [Rufus](https://rufus.ie): select the ISO, leave the defaults
 (`GPT` / `UEFI`), click Start. If Rufus offers "ISO mode" vs "DD mode", either
 works — this is a hybrid image.
 
-On macOS or Linux:
+On Linux — including from a Raspberry Pi, which can write an x86 stick
+perfectly well even though it cannot boot one — use the helper, which refuses
+anything that is not a whole, removable, non-system disk and verifies the stick
+afterwards by reading it back:
+
+```bash
+sudo ./os/tools/write-usb.sh godmode-os-0.1-amd64.iso
+```
+
+With no device it lists the removable disks it would accept and writes nothing.
+Then re-run it with the one you want:
+
+```bash
+sudo ./os/tools/write-usb.sh godmode-os-0.1-amd64.iso /dev/sdX
+```
+
+It makes you type the device path before erasing it, and it compares a
+read-back of the stick against the image, so a silently bad write or a failing
+stick is caught before you try to boot it. Add `--zero` to blank the space past
+the image as well.
+
+Raw `dd` works too, but nothing checks you picked the right disk:
 
 ```bash
 sudo dd if=godmode-os-0.1-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync
